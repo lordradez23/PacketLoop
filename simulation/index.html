@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PacketLoop — Live Simulation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Background animation -->
+  <div class="bg-grid"></div>
+  <div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <!-- Top Header Bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-mark">⚡</div>
+      <span class="logo-text">PacketLoop</span>
+      <span class="logo-version">v2.1.0</span>
+      <div class="status-pill" id="statusPill">
+        <span class="dot dot-idle"></span>
+        <span id="statusText">IDLE</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="tbar-stat">
+        <span class="tstat-label">INTERFACE</span>
+        <span class="tstat-val" id="hdrIface">—</span>
+      </div>
+      <div class="tbar-stat">
+        <span class="tstat-label">TARGET BSSID</span>
+        <span class="tstat-val" id="hdrBssid">—</span>
+      </div>
+      <div class="tbar-stat">
+        <span class="tstat-label">PPS</span>
+        <span class="tstat-val accent" id="hdrPps">—</span>
+      </div>
+      <div class="tbar-stat">
+        <span class="tstat-label">ELAPSED</span>
+        <span class="tstat-val" id="hdrElapsed">00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: Config Panel -->
+    <aside class="config-panel glass">
+      <div class="panel-header">
+        <span class="panel-icon">⚙️</span>
+        <span>Session Config</span>
+      </div>
+
+      <div class="config-section">
+        <label class="cfg-label">Interface</label>
+        <select id="cfgInterface" class="cfg-input">
+          <option value="wlan0mon">wlan0mon</option>
+          <option value="wlan1mon">wlan1mon</option>
+          <option value="wlan2mon">wlan2mon</option>
+        </select>
+      </div>
+
+      <div class="config-section">
+        <label class="cfg-label">Target BSSID</label>
+        <select id="cfgBssid" class="cfg-input">
+          <option value="DE:AD:BE:EF:CA:FE">DE:AD:BE:EF:CA:FE — Corp-WiFi-5G</option>
+          <option value="00:11:22:33:44:55">00:11:22:33:44:55 — Office-Net</option>
+          <option value="AA:BB:CC:DD:EE:00">AA:BB:CC:DD:EE:00 — CafePub-Hotspot</option>
+        </select>
+      </div>
+
+      <div class="config-section">
+        <label class="cfg-label">Session Duration</label>
+        <div class="slider-row">
+          <input type="range" id="cfgTime" min="30" max="600" value="120" step="30" class="slider" />
+          <span class="slider-val" id="cfgTimeVal">120s</span>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <label class="cfg-label">Whitelist MACs</label>
+        <input type="text" id="cfgWhitelist" class="cfg-input" placeholder="AA:BB:CC:DD:EE:FF" />
+      </div>
+
+      <div class="config-section">
+        <label class="cfg-label">Modules</label>
+        <div class="toggle-grid">
+          <label class="toggle-item">
+            <input type="checkbox" id="modGhost" class="toggle-cb" checked />
+            <span class="toggle-switch"></span>
+            <span class="toggle-lbl">Ghost AP Flood</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="modProtect" class="toggle-cb" checked />
+            <span class="toggle-switch"></span>
+            <span class="toggle-lbl">Counter-Deauth</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="modHandshake" class="toggle-cb" checked />
+            <span class="toggle-switch"></span>
+            <span class="toggle-lbl">Handshake Capture</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="modFingerprint" class="toggle-cb" checked />
+            <span class="toggle-switch"></span>
+            <span class="toggle-lbl">Fingerprinting</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="modAlerts" class="toggle-cb" />
+            <span class="toggle-switch"></span>
+            <span class="toggle-lbl">Cloud Alerts</span>
+          </label>
+          <label class="toggle-item">
+            <input type="checkbox" id="modAnalyze" class="toggle-cb" checked />
+            <span class="toggle-switch"></span>
+            <span class="toggle-lbl">PCAP Analysis</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="config-section">
+        <label class="cfg-label">Cloud Alerts</label>
+        <input type="text" id="cfgDiscord" class="cfg-input" placeholder="Discord Webhook URL" style="margin-bottom:8px" />
+        <input type="text" id="cfgTelegram" class="cfg-input" placeholder="Telegram Token (optional)" />
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-launch" id="btnLaunch" onclick="launchSimulation()">
+          <span>▶ Launch Simulation</span>
+        </button>
+        <button class="btn-stop" id="btnStop" onclick="stopSimulation()" disabled>
+          <span>■ Stop</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- CENTER: Terminal + Live Stats -->
+    <div class="center-col">
+
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-card glass" id="statDeauth">
+          <div class="stat-icon">💥</div>
+          <div class="stat-body">
+            <div class="stat-value" id="sDeauth">0</div>
+            <div class="stat-name">Deauths Sent</div>
+          </div>
+        </div>
+        <div class="stat-card glass" id="statClients">
+          <div class="stat-icon">📡</div>
+          <div class="stat-body">
+            <div class="stat-value" id="sClients">0</div>
+            <div class="stat-name">Clients Found</div>
+          </div>
+        </div>
+        <div class="stat-card glass" id="statPps">
+          <div class="stat-icon">⚡</div>
+          <div class="stat-body">
+            <div class="stat-value accent" id="sPps">—</div>
+            <div class="stat-name">Current PPS</div>
+          </div>
+        </div>
+        <div class="stat-card glass" id="statGhost">
+          <div class="stat-icon">👻</div>
+          <div class="stat-body">
+            <div class="stat-value" id="sGhost">0</div>
+            <div class="stat-name">Ghost APs</div>
+          </div>
+        </div>
+        <div class="stat-card glass" id="statHandshake">
+          <div class="stat-icon">🔑</div>
+          <div class="stat-body">
+            <div class="stat-value" id="sHandshake">—</div>
+            <div class="stat-name">Handshake</div>
+          </div>
+        </div>
+        <div class="stat-card glass" id="statAlerts">
+          <div class="stat-icon">🔔</div>
+          <div class="stat-body">
+            <div class="stat-value" id="sAlerts">0</div>
+            <div class="stat-name">Alerts Sent</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PPS Chart -->
+      <div class="card glass chart-card">
+        <div class="card-header">
+          <span>📈 Adaptive PPS Live Chart</span>
+          <span class="chip" id="ppsChip">IDLE</span>
+        </div>
+        <canvas id="ppsCanvas" width="700" height="100"></canvas>
+      </div>
+
+      <!-- Terminal -->
+      <div class="card glass terminal-card">
+        <div class="card-header terminal-header">
+          <div class="terminal-dots">
+            <span class="tdot red"></span>
+            <span class="tdot yellow"></span>
+            <span class="tdot green"></span>
+          </div>
+          <span class="terminal-title">root@kali:~$ packet_loop.py</span>
+          <button class="btn-clear" onclick="clearTerminal()">Clear</button>
+        </div>
+        <div class="terminal-body" id="terminal">
+          <div class="term-line dim">PacketLoop Simulation Engine — Awaiting launch...</div>
+          <div class="term-line dim">Configure your session parameters on the left and click Launch.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT: Client Map + Alerts -->
+    <aside class="right-col">
+
+      <!-- Client Roster -->
+      <div class="card glass">
+        <div class="card-header">
+          <span>🖥 Discovered Clients</span>
+          <span class="chip" id="clientChip">0 online</span>
+        </div>
+        <div class="client-list" id="clientList">
+          <div class="empty-state">No clients discovered yet.</div>
+        </div>
+      </div>
+
+      <!-- Ghost AP List -->
+      <div class="card glass">
+        <div class="card-header">
+          <span>👻 Ghost AP Networks</span>
+          <span class="chip success" id="ghostChip">Inactive</span>
+        </div>
+        <div class="ghost-list" id="ghostList">
+          <div class="empty-state">Ghost AP module not running.</div>
+        </div>
+      </div>
+
+      <!-- Alerts Feed -->
+      <div class="card glass">
+        <div class="card-header">
+          <span>🔔 Cloud Alerts Feed</span>
+          <span class="chip warning" id="alertChip">Discord / Telegram</span>
+        </div>
+        <div class="alert-feed" id="alertFeed">
+          <div class="empty-state">Alerts will appear here during session.</div>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- PCAP Report Modal -->
+  <div class="modal-backdrop" id="reportModal" style="display:none">
+    <div class="modal glass">
+      <div class="modal-header">
+        <span>📊 Post-Session PCAP Analysis Report</span>
+        <button onclick="closeModal()" class="modal-close">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script src="sim.js"></script>
+</body>
+</html>
