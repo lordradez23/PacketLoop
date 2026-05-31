@@ -1,44 +1,114 @@
-# PacketLoop
+# PacketLoop: Advanced Traffic Orchestration & Deauth Suite
 
-**PacketLoop** is a professional-grade network stress testing and traffic orchestration tool. It leverages the power of `aireplay-ng` and `tcpreplay` to create controlled network environments where specific devices are prioritized while others are restricted.
-
-## Core Features
-
-- **Automated Deauth Loops**: Continuously monitors an Access Point and disconnects all clients EXCEPT for those on a user-defined whitelist.
-- **Traffic Replay (Turbo Mode)**: Uses `tcpreplay` to inject high-speed traffic from a PCAP file, effectively testing the network's bandwidth limits and congestion handling.
-- **Timed Operations**: Run loops for a specific timeframe, allowing for automated and scheduled network testing.
-- **Airplay/WiFi Optimization**: Designed to clear interference and ensure maximum "crazy speed" for prioritized devices.
-
-## Research & Logic
-
-### 1. The "Whitelist" Mechanism
-Since standard WiFi tools don't natively support whitelisting for deauthentication, PacketLoop implements a "Targeted Scan & Kill" strategy:
-1. **Discover**: Background monitoring of the channel for new client associations.
-2. **Filter**: Compare discovered MAC addresses against the `WHITELIST`.
-3. **Execute**: Spawn individual `aireplay-ng -0` processes for every non-whitelisted device.
-
-### 2. High-Speed Injection (The "Crazy Speed" Tool)
-To achieve "crazy speed", PacketLoop uses two methods:
-- **`tcpreplay --topspeed`**: Replays captured high-throughput sessions back onto the channel at the maximum Physical Layer rate possible.
-- **`aireplay-ng -3` (ARP Replay)**: Loops ARP requests to stimulate traffic generation from the AP, increasing the overall packet frequency on the network.
-
-## Prerequisites
-
-- **OS**: Linux (Kali Linux, Ubuntu) or WSL2 (with USB WiFi passthrough).
-- **Hardare**: Wireless card supporting **Monitor Mode** and **Packet Injection** (e.g., Alfa AWUS036ACM).
-- **Tools**: `aircrack-ng` suite, `tcpreplay`.
-
-## Usage
-
-```bash
-sudo python3 packet_loop.py -i wlan0mon -b 00:11:22:33:44:55 -w AA:BB:CC:DD:EE:FF -t 300 -p speed_test.pcap
-```
-
-- `-i`: Your monitor mode interface.
-- `-b`: The target Access Point BSSID.
-- `-w`: MAC addresses that should STAY connected.
-- `-t`: Duration in seconds.
-- `-p`: (Optional) PCAP file for traffic injection.
+**PacketLoop** is a high-performance network testing engine designed for targeted traffic control in wireless environments. It combines automated deauthentication, packet looping, and high-frequency traffic injection into a single, unified orchestration platform.
 
 ---
-**Disclaimer**: This tool is for educational purposes only. Unauthorized use on networks without explicit permission is illegal.
+
+## 🏛️ System Architecture
+
+PacketLoop operates on a multi-threaded orchestration layer that interfaces directly with raw socket drivers and packet injection suites.
+
+### High-Level Architecture
+```mermaid
+graph TD
+    User([User CLI]) --> Config[Argument Parser]
+    Config --> Core[PacketLoop Core Engine]
+    
+    subgraph Execution_Layer [Execution Layer]
+        Core --> Scanner[Client Discovery Loop]
+        Core --> Deauth[Targeted Deauth Engine]
+        Core --> Turbo[Turbo Injection Loop]
+    end
+    
+    Scanner --> Filter{Whitelist Filter}
+    Filter -->|Non-Whitelisted| Deauth
+    Filter -->|Whitelisted| Ignored[Ignore Device]
+    
+    Deauth --> Driver[[Wireless Interface Drivers]]
+    Turbo --> Driver
+```
+
+---
+
+## ⚙️ System Structure
+
+| Component | Responsibility | Technical Stack |
+| :--- | :--- | :--- |
+| `packet_loop.py` | Main Orchestrator & Process Manager | Python 3.10+ |
+| `utils.py` | OS-Level Utility & Admin Validation | Python / C-Types |
+| `aireplay-ng` | Raw WiFi Frame Injection | Aircrack-ng Suite |
+| `tcpreplay` | High-Purity Traffic Re-injection | Tcpreplay Utilities |
+
+---
+
+## 🔄 Logic Flow (Operational Cycle)
+
+The following flowchart illustrates the lifecycle of a PacketLoop testing session:
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant App as PacketLoop Engine
+    participant Scan as Scanner
+    participant Attack as Injection Layer
+    
+    User->>App: Start (BSSID, Whitelist, Timeframe)
+    App->>App: Validate Admin Privileges
+    App->>App: Set Monitor Mode
+    
+    Par Multi-Threaded Loops
+        App->>Scan: Periodic Client Discovery
+        Scan-->>App: List of MACs
+        App->>Attack: Turbo Mode (Looping Packets)
+    End
+    
+    Loop Every Cycle
+        App->>App: Filter Whitelist
+        App->>Attack: Targeted Deauth (Non-Whitelisted)
+    End
+    
+    Note over App, Attack: Runs until Timeframe Expired
+    App->>Attack: Terminate Processes
+    App->>User: Session Summary Report
+```
+
+---
+
+## 🛠️ Configuration & Usage
+
+### CLI Arguments Reference
+
+| Flag | Parameter | Description | Required |
+| :--- | :--- | :--- | :--- |
+| `-i`, `--interface` | `STR` | Wireless interface in monitor mode (e.g., `wlan0mon`) | Yes |
+| `-b`, `--bssid` | `MAC` | Target Access Point MAC Address | Yes |
+| `-w`, `--whitelist` | `LIST` | Client MAC addresses to EXCLUDE from deauth | No |
+| `-t`, `--time` | `INT` | Duration of the session in seconds | No (Def: 60) |
+| `-p`, `--pcap` | `PATH` | Custom PCAP for high-speed traffic looping | No |
+
+### Execution Examples
+
+**Standard Whitelisted Deauth:**
+```bash
+python packet_loop.py -i wlan0mon -b 00:11:22:33:44:55 -w AA:BB:CC:DD:EE:FF
+```
+
+**High-Frequency Traffic Stress (Turbo Mode):**
+```bash
+python packet_loop.py -i wlan0mon -b 00:11:22:33:44:55 -p stress_test.pcap -t 300
+```
+
+---
+
+## 🧠 Advanced Mechanics
+
+### 1. Targeted Deauthentication
+Unlike broadcast deauth, PacketLoop executes **Targeted Deauth Loops**. By sending individual Deauth frames to specific station MACs, it preserves the connection of whitelisted devices while aggressively clearing other traffic.
+
+### 2. Turbo Mode (Packet Looping)
+The "Crazy Speed" feature is achieved by using `aireplay-ng` interactive replay modes or `tcpreplay` in high-PPS configurations. This saturates the AP's packet buffer, causing it to drop external requests while prioritizing the injected loop.
+
+---
+
+## ⚖️ Legal Disclaimer
+**FOR EDUCATIONAL PURPOSES ONLY.** PacketLoop is designed for authorized network stress testing and security auditing. Usage of this tool on networks without explicit, written consent is illegal and may violate local and international laws. The developers assume no liability for misuse.
