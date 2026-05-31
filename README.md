@@ -227,4 +227,30 @@ Recommended hardware: **Alfa AWUS036ACM** or **Alfa AWUS036ACS**.
 ---
 
 ## Legal Disclaimer
-**FOR EDUCATIONAL PURPOSES ONLY.** PacketLoop is designed for authorized penetration testing and network security auditing. Usage of this tool on networks without explicit, written consent is illegal and may violate local and international laws. The developers assume no liability for any misuse.
+
+> [!CAUTION]
+> **THIS TOOL IS CLASSIFIED AS DUAL-USE OFFENSIVE SECURITY SOFTWARE.**
+> In the wrong hands, PacketLoop can be weaponized to:
+> - **Knock entire networks offline** — by flooding an AP with deauth frames, every connected device is disconnected simultaneously.
+> - **Intercept private credentials** — forced re-authentication via handshake capture can expose WPA2 keys to offline brute-force attacks.
+> - **Impersonate legitimate networks** — Ghost AP mode can create convincing decoy hotspots to intercept and redirect user traffic.
+> - **Permanently disrupt communications** — sustained deauth loops running at high PPS can render business-critical infrastructure inoperable.
+> - **Counter legitimate security teams** — the Counter-Deauth engine can be turned against authorized administrators.
+
+> [!WARNING]
+> **LEGAL CONSEQUENCES OF UNAUTHORIZED USE:**
+> Deploying PacketLoop on networks you do not own or do not have **explicit written authorization** to test is a **criminal offense** in most jurisdictions:
+> - 🇺🇸 USA: Computer Fraud and Abuse Act (CFAA) — up to **10 years imprisonment**
+> - 🇬🇧 UK: Computer Misuse Act 1990 — up to **10 years imprisonment**
+> - 🇪🇺 EU: Directive 2013/40/EU — criminal penalties across all member states
+> - 🌍 Most countries classify unauthorized network interference as **cyberterrorism**
+
+> [!IMPORTANT]
+> **FOR AUTHORIZED SECURITY PROFESSIONALS ONLY.**
+> PacketLoop is designed exclusively for:
+> - Penetration testers operating under a signed **Rules of Engagement (RoE)** document.
+> - Network administrators testing their **own infrastructure**.
+> - Academic researchers operating within an **isolated lab environment**.
+>
+> The developers of PacketLoop assume **zero liability** for any misuse, damage, or legal consequences resulting from unauthorized or malicious use of this software.
+
