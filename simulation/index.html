@@ -188,13 +188,27 @@
         </div>
       </div>
 
-      <!-- PPS Chart -->
-      <div class="card glass chart-card">
-        <div class="card-header">
-          <span>📈 Adaptive PPS Live Chart</span>
-          <span class="chip" id="ppsChip">IDLE</span>
+      <!-- Visual Analytics Row -->
+      <div class="visual-row">
+        <!-- PPS Chart -->
+        <div class="card glass chart-card">
+          <div class="card-header">
+            <span>📈 Adaptive PPS Live Chart</span>
+            <span class="chip" id="ppsChip">IDLE</span>
+          </div>
+          <canvas id="ppsCanvas"></canvas>
         </div>
-        <canvas id="ppsCanvas" width="700" height="100"></canvas>
+
+        <!-- Network Topology -->
+        <div class="card glass topo-card">
+          <div class="card-header">
+            <span>🕸 Network Topology View</span>
+            <span class="chip running" id="topoChip">Real-time</span>
+          </div>
+          <div id="topologyContainer">
+            <canvas id="topoCanvas"></canvas>
+          </div>
+        </div>
       </div>
 
       <!-- Terminal -->

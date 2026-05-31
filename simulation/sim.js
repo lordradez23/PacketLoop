@@ -43,6 +43,9 @@ const state = {
   // PCAP
   pcapFrames: 0,
   pcapBytes: 0,
+
+  // Topology
+  topoNodes: [], // { x, y, mac, type, active, flare: 0 }
 };
 
 // ---- Static Data ----
@@ -176,6 +179,79 @@ function drawPpsChart() {
   ctx.fillText(`${cur} PPS`, 8, 16);
 }
 
+// ---- Network Topology ----
+const topoCanvas = $("topoCanvas");
+const tctx = topoCanvas.getContext("2d");
+
+function drawTopology() {
+  if (!state.running) return;
+  const w = topoCanvas.width = topoCanvas.parentElement.clientWidth;
+  const h = topoCanvas.height = topoCanvas.parentElement.clientHeight;
+  tctx.clearRect(0,0,w,h);
+
+  const cx = w/2, cy = h/2;
+
+  // Draw AP (Center)
+  tctx.shadowBlur = 15;
+  tctx.shadowColor = "rgba(0,212,255,0.5)";
+  tctx.fillStyle = "#00d4ff";
+  tctx.beginPath();
+  tctx.arc(cx, cy, 10, 0, Math.PI*2);
+  tctx.fill();
+  tctx.shadowBlur = 0;
+
+  tctx.fillStyle = "rgba(0,212,255,0.8)";
+  tctx.font = "bold 10px JetBrains Mono";
+  tctx.textAlign = "center";
+  tctx.fillText(state.bssid, cx, cy + 25);
+
+  // Draw Clients
+  const clientKeys = Object.keys(state.clients);
+  clientKeys.forEach((mac, i) => {
+    const angle = (i / clientKeys.length) * Math.PI * 2 + (Date.now() / 5000);
+    const radius = 60 + Math.sin(Date.now() / 1000 + i) * 5;
+    const x = cx + Math.cos(angle) * radius;
+    const y = cy + Math.sin(angle) * radius;
+
+    const info = state.clients[mac];
+    const isWhitelisted = info.status === "whitelisted";
+
+    // Connection Line
+    tctx.beginPath();
+    tctx.moveTo(cx, cy);
+    tctx.lineTo(x, y);
+    tctx.strokeStyle = isWhitelisted ? "rgba(0,229,160,0.15)" : "rgba(255,77,109,0.15)";
+    tctx.setLineDash([2, 4]);
+    tctx.stroke();
+    tctx.setLineDash([]);
+
+    // Shockwave Flare (on deauth)
+    if (info._flare > 0) {
+      tctx.beginPath();
+      tctx.arc(x, y, 15 * (1 - info._flare), 0, Math.PI*2);
+      tctx.strokeStyle = `rgba(255,77,109,${info._flare})`;
+      tctx.stroke();
+      info._flare -= 0.05;
+    }
+
+    // Client Node
+    tctx.fillStyle = isWhitelisted ? "#00e5a0" : "#ff4d6d";
+    tctx.beginPath();
+    tctx.arc(x, y, 5, 0, Math.PI*2);
+    tctx.fill();
+
+    // Signal pulse
+    if (Math.random() < 0.1) {
+      tctx.beginPath();
+      tctx.arc(x, y, 8, 0, Math.PI*2);
+      tctx.strokeStyle = tctx.fillStyle;
+      tctx.stroke();
+    }
+  });
+
+  requestAnimationFrame(drawTopology);
+}
+
 // ---- AdaptivePPS Engine ----
 function tickPps() {
   // Simulate TX errors occasionally
@@ -229,6 +305,7 @@ function discoverClient() {
     icon:   oui.icon,
     status: isWhite ? "whitelisted" : "deauthed",
     firstSeen: Date.now(),
+    _flare: 0
   };
 
   updateClientUI();
@@ -263,6 +340,8 @@ function deauthClient(mac, oui) {
   state.deauthCount++;
   $("sDeauth").textContent = state.deauthCount;
   pulse("statDeauth");
+
+  if (state.clients[mac]) state.clients[mac]._flare = 1.0;
 
   termLine(
     `[Deauth] → Sending burst (x5) to <span class="term-deauth">${mac}</span> (${oui.vendor}) on ${state.bssid}`,
@@ -618,6 +697,9 @@ function launchSimulation() {
 
     if (state.modules.ghost)   startGhostAP();
     if (state.modules.protect) startBeaconProtection();
+
+    // Start Topology render
+    drawTopology();
 
   }, offset + 300);
 }

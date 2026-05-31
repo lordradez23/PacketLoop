@@ -212,6 +212,29 @@ python packet_loop.py \
 
 ---
 
+## Hardware Compatibility
+
+For optimal performance with `adaptive_pps.py` and the `Deauth Engine`, your wireless adapter MUST support **Monitor Mode** and **Packet Injection**.
+
+| Chipset | Recommended Model | Stability | Notes |
+| :--- | :--- | :--- | :--- |
+| **MT7612U** | Alfa AWUS036ACM | 🟢 Elite | Plug-and-play on Kali Linux. Best stability at 3000 PPS. |
+| **RTL8812AU** | Alfa AWUS036ACH | 🟡 High | High power, but requires manual driver installation. |
+| **AR9271** | Alfa AWUS036NHA | 🟡 High | 2.4GHz only. Legendary for injection stability. |
+| **RT3070** | Generic Alfa clones | 🔴 Medium | Cheap, but prone to crashing under high PPS. |
+
+---
+
+## Simulation Dashboard
+
+If you lack the required hardware, you can launch the **Cyberpunk Simulation** to visualize the platform's orchestration:
+
+1.  Navigate to the `simulation/` directory.
+2.  Open `index.html` in any modern browser.
+3.  Click **Launch Simulation** to see the Adaptive PPS, Topology, and Handshake Capture modules interact in real-time.
+
+---
+
 ## Prerequisites
 
 | Requirement | Install Command |

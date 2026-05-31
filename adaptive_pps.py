@@ -50,18 +50,16 @@ class AdaptivePPS:
             prev_errors = current_errors
 
             with self._lock:
-                if error_delta > 50:
-                    # High error rate: back off
-                    new_pps = max(self.min_pps, self.current_pps - self.step * 2)
-                    if new_pps != self.current_pps:
-                        self.current_pps = new_pps
-                        self.log(f"Congestion detected! Backing off to {self.current_pps} PPS.")
-                elif error_delta < 5:
-                    # Low error rate: ramp up
-                    new_pps = min(self.max_pps, self.current_pps + self.step)
-                    if new_pps != self.current_pps:
-                        self.current_pps = new_pps
-                        self.log(f"Channel clear. Ramping up to {self.current_pps} PPS.")
+                if error_delta > 30:
+                    # Congestion detected: aggressive back-off
+                    # We use an exponential back-off factor for safety
+                    self.current_pps = max(self.min_pps, int(self.current_pps * 0.7))
+                    self.log(f"⚠ CONGESTION ALERT! Delta: {error_delta}. Backed off to {self.current_pps} PPS.")
+                elif error_delta < 10:
+                    # Channel clear: smooth linear ramp-up
+                    self.current_pps = min(self.max_pps, self.current_pps + self.step)
+                    if self.current_pps % 500 == 0:
+                        self.log(f"✔ Channel stable. Performance at {self.current_pps} PPS.")
 
     def start(self):
         """Starts the background PPS monitor thread."""

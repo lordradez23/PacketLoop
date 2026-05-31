@@ -28,6 +28,13 @@ KNOWN_DEVICE_TYPES = {
     "cc:50:e3": ("Espressif", "IoT Device"),
     "00:0f:00": ("Intel", "WiFi Adapter"),
     "a4:02:b9": ("Intel", "WiFi Adapter"),
+    "44:65:0d": ("Amazon", "Echo/FireTV"),
+    "00:bb:3a": ("Amazon", "Ring Doorbell"),
+    "18:b4:30": ("Nest Labs", "Nest Thermostat"),
+    "ec:1a:59": ("Tesla", "Model S/X/3"),
+    "00:1c:2b": ("Microsoft", "Surface/Xbox"),
+    "28:cf:e9": ("Apple", "Mac Pro"),
+    "d0:03:4b": ("Apple", "iPhone 15+"),
 }
 
 class ClientFingerprint:
