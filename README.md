@@ -1,4 +1,4 @@
-# PacketLoop 🚀
+# PacketLoop
 
 **PacketLoop** is a professional-grade network stress testing and traffic orchestration tool. It leverages the power of `aireplay-ng` and `tcpreplay` to create controlled network environments where specific devices are prioritized while others are restricted.
 
