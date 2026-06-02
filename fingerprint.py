@@ -37,6 +37,7 @@ KNOWN_DEVICE_TYPES = {
     "d0:03:4b": ("Apple", "iPhone 15+"),
     "00:13:a9": ("Sony", "PlayStation/Bravia"),
     "00:50:e4": ("LG Electronics", "Smart TV/Appliances"),
+    "00:11:0a": ("Hewlett-Packard", "Printer/Server"),
 }
 
 class ClientFingerprint:
