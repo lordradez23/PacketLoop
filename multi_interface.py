@@ -26,6 +26,20 @@ class WeightedHopper:
     def update_weight(self, channel, packet_count):
         self.weights[channel] = packet_count
 
+class SequentialHopper:
+    """
+    Standard sequential channel hopping (1-13).
+    """
+    def __init__(self, interface, channels=None):
+        self.interface = interface
+        self.channels = channels or list(range(1, 14))
+        self.current_index = 0
+    
+    def get_next_channel(self):
+        ch = self.channels[self.current_index]
+        self.current_index = (self.current_index + 1) % len(self.channels)
+        return ch
+
 class InterfaceWorker(threading.Thread):
     """A worker thread that manages packet injection on a single wireless interface."""
 
