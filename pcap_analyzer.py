@@ -3,6 +3,7 @@ import os
 import struct
 import time
 import json
+import csv
 from collections import defaultdict
 
 # Feature 10: PCAP Analysis Engine
@@ -147,4 +148,22 @@ class PcapAnalyzer:
             return output_path
         except Exception as e:
             self.log(f"Failed to export JSON: {e}")
+            return None
+
+    def export_csv(self, report, output_path=None):
+        """Exports the report metrics as a CSV file."""
+        if not output_path:
+            output_path = self.pcap_path + ".report.csv"
+        try:
+            with open(output_path, "w", newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(["Metric", "Value"])
+                for k, v in report.items():
+                    if isinstance(v, list):
+                        v = ";".join(v)
+                    writer.writerow([k, v])
+            self.log(f"CSV report exported to: {output_path}")
+            return output_path
+        except Exception as e:
+            self.log(f"Failed to export CSV: {e}")
             return None
