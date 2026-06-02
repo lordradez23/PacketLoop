@@ -29,7 +29,7 @@ CLR_E = "\033[0m"  # End
 class PacketLoop:
     def __init__(self, interface, bssid, whitelist, timeframe, pcap=None,
                  discord_webhook=None, telegram_token=None, telegram_chat_id=None,
-                 ghost=False, protect_mac=None, analyze_after=False):
+                 ghost=False, protect_mac=None, analyze_after=False, quiet=False):
         self.interface = interface
         self.bssid = bssid
         self.whitelist = [mac.lower() for mac in whitelist]
@@ -38,6 +38,7 @@ class PacketLoop:
         self.ghost = ghost
         self.protect_mac = protect_mac
         self.analyze_after = analyze_after
+        self.quiet = quiet
         self.processes = []
         self.running = True
         self._deauth_count = 0
@@ -51,7 +52,8 @@ class PacketLoop:
         self.protection = BeaconProtection(interface, protect_mac, bssid) if protect_mac else None
 
     def log(self, message):
-        print(f"{CLR_B}[*]{CLR_E} {message}")
+        if not self.quiet:
+            print(f"{CLR_B}[*]{CLR_E} {message}")
 
     def error(self, message):
         print(f"{CLR_R}[!] ERROR:{CLR_E} {message}")
@@ -186,6 +188,7 @@ if __name__ == "__main__":
     parser.add_argument("--telegram-token", help="Telegram Bot token for alerts")
     parser.add_argument("--telegram-chat", help="Telegram Chat ID for alerts")
     parser.add_argument("--analyze", action="store_true", help="Run PCAP analysis report after session")
+    parser.add_argument("--quiet", action="store_true", help="Minimal output mode")
 
     args = parser.parse_args()
 
@@ -200,6 +203,7 @@ if __name__ == "__main__":
         telegram_chat_id=args.telegram_chat,
         ghost=args.ghost,
         protect_mac=args.protect,
-        analyze_after=args.analyze
+        analyze_after=args.analyze,
+        quiet=args.quiet
     )
     loop.run()
