@@ -43,6 +43,7 @@ KNOWN_DEVICE_TYPES = {
     "00:1d:be": ("Nintendo Co., Ltd.", "Console/Handheld"),
     "00:15:af": ("ASUSTek Computer Inc.", "Laptop/Router"),
     "00:14:6c": ("NETGEAR", "Router/AP"),
+    "00:1f:3f": ("TP-Link", "Router/Cam"),
 }
 
 class ClientFingerprint:
