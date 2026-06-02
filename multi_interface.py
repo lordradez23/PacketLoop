@@ -52,6 +52,13 @@ class RandomHopper:
     def get_next_channel(self):
         return random.choice(self.channels)
 
+class PrimeHopper(SequentialHopper):
+    """
+    Hops only on primary non-overlapping channels (1, 6, 11).
+    """
+    def __init__(self, interface):
+        super().__init__(interface, channels=[1, 6, 11])
+
 class InterfaceWorker(threading.Thread):
     """A worker thread that manages packet injection on a single wireless interface."""
 
