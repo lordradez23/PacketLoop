@@ -25,13 +25,14 @@ CLR_Y = "\033[93m" # Yellow
 CLR_B = "\033[94m" # Blue
 CLR_R = "\033[91m" # Red
 CLR_C = "\033[96m" # Cyan
+CLR_A = "\033[96m"  # Cyan (Alert)
 CLR_E = "\033[0m"  # End
 
 class PacketLoop:
     def __init__(self, interface, bssid, timeframe=120, whitelist=None, pcap=None, 
                  discord_webhook=None, telegram_token=None, telegram_chat_id=None,
                  ghost=True, protect_mac=None, analyze_after=False, quiet=False,
-                 vendor_filter=None):
+                 vendor_filter=None, dry_run=False):
         self.interface = interface
         self.bssid = bssid
         self.timeframe = int(timeframe)
@@ -42,6 +43,7 @@ class PacketLoop:
         self.analyze_after = analyze_after
         self.quiet = quiet
         self.vendor_filter = vendor_filter
+        self.dry_run = dry_run
         self.processes = []
         self.running = True
         self._deauth_count = 0
@@ -123,6 +125,13 @@ class PacketLoop:
         self.log("Turbo Mode engaged.")
 
     def run(self):
+        self.log(f"Initializing PacketLoop session on {self.interface}...")
+        self.log(f"Target BSSID: {self.bssid} | Duration: {self.timeframe}s")
+
+        if self.dry_run:
+            self.log(f"{CLR_A}[DRY-RUN] Configuration valid. Exiting.{CLR_E}")
+            return
+
         self.check_root()
         self.check_tools()
         self.set_monitor_mode()
@@ -194,6 +203,7 @@ if __name__ == "__main__":
     parser.add_argument("--quiet", action="store_true", help="Minimal output mode")
     parser.add_argument("--config", help="Path to JSON configuration file")
     parser.add_argument("--vendor-filter", help="Only target clients from this vendor")
+    parser.add_argument("--dry-run", action="store_true", help="Validate config then exit")
 
     args = parser.parse_args()
 
@@ -219,6 +229,7 @@ if __name__ == "__main__":
         protect_mac=config_params.get("protect", args.protect),
         analyze_after=config_params.get("analyze", args.analyze),
         quiet=config_params.get("quiet", args.quiet),
-        vendor_filter=config_params.get("vendor_filter", args.vendor_filter)
+        vendor_filter=config_params.get("vendor_filter", args.vendor_filter),
+        dry_run=config_params.get("dry_run", args.dry_run)
     )
     loop.run()
