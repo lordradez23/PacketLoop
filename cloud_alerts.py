@@ -12,12 +12,18 @@ import os
 # Requires no third-party libraries - uses urllib only.
 
 class CloudAlerts:
-    def __init__(self, discord_webhook=None, telegram_token=None, telegram_chat_id=None, matrix_url=None):
+    def __init__(self, discord_webhook=None, telegram_token=None, telegram_chat_id=None, matrix_url=None, slack_webhook=None):
         self.discord_webhook = discord_webhook or os.getenv("PACKETLOOP_DISCORD_WEBHOOK")
         self.telegram_token = telegram_token or os.getenv("PACKETLOOP_TELEGRAM_TOKEN")
         self.telegram_chat_id = telegram_chat_id or os.getenv("PACKETLOOP_TELEGRAM_CHAT_ID")
         self.matrix_url = matrix_url or os.getenv("PACKETLOOP_MATRIX_URL")
-        self._enabled = bool(self.discord_webhook or (self.telegram_token and self.telegram_chat_id) or self.matrix_url)
+        self.slack_webhook = slack_webhook or os.getenv("PACKETLOOP_SLACK_WEBHOOK")
+        self._enabled = bool(
+            self.discord_webhook or 
+            (self.telegram_token and self.telegram_chat_id) or 
+            self.matrix_url or
+            self.slack_webhook
+        )
 
     def log(self, msg):
         print(f"[CloudAlerts] {msg}")
@@ -82,6 +88,23 @@ class CloudAlerts:
         except Exception as e:
             self.log(f"Matrix request failed: {e}")
 
+    def _send_slack(self, message):
+        """Sends a message to a Slack channel via webhook."""
+        if not self.slack_webhook:
+            return
+        payload = json.dumps({"text": message}).encode("utf-8")
+        req = urllib.request.Request(
+            self.slack_webhook, data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                if resp.status != 200:
+                    self.log(f"Slack alert failed with status: {resp.status}")
+        except Exception as e:
+            self.log(f"Slack request failed: {e}")
+
     def alert(self, message):
         """Broadcasts an alert to all configured services."""
         if not self._enabled:
@@ -89,6 +112,7 @@ class CloudAlerts:
         self._send_discord(message)
         self._send_telegram(message)
         self._send_matrix(message)
+        self._send_slack(message)
 
     def new_client_detected(self, mac, bssid):
         msg = (
