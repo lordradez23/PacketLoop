@@ -1,6 +1,23 @@
 import subprocess
 import re
 import os
+import json
+from datetime import datetime
+
+def log_json(module, message, level="INFO", extra=None):
+    """Logs a message in JSON format for structured analysis."""
+    log_data = {
+        "timestamp": datetime.now().isoformat(),
+        "module": module,
+        "level": level,
+        "message": message
+    }
+    if extra:
+        log_data.update(extra)
+    
+    log_file = "packet_loop.log.json"
+    with open(log_file, "a") as f:
+        f.write(json.dumps(log_data) + "\n")
 
 def get_clients(bssid, interface):
     """
