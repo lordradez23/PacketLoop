@@ -325,6 +325,7 @@ function discoverClient() {
     icon:   oui.icon,
     status: isWhite ? "whitelisted" : "deauthed",
     firstSeen: Date.now(),
+    rssi: -30 - Math.floor(Math.random() * 60),
     _flare: 0
   };
 
@@ -517,8 +518,16 @@ function updateClientUI() {
   Object.entries(state.clients).forEach(([mac, info]) => {
     const item = document.createElement("div");
     item.className = `client-item ${info.status}`;
+    const bars = Math.ceil((info.rssi + 100) / 20);
+    const barHtml = Array(5).fill(0).map((_, i) => 
+      `<div style="width:2px; height:${(i+1)*2}px; background:${i < bars ? 'var(--accent)' : 'var(--text-dim)'}; margin-right:1px"></div>`
+    ).join("");
+
     item.innerHTML = `
-      <span style="font-size:16px">${info.icon}</span>
+      <div style="display:flex; flex-direction:column; align-items:center; gap:2px">
+        <span style="font-size:16px">${info.icon}</span>
+        <div style="display:flex; align-items:flex-end">${barHtml}</div>
+      </div>
       <div style="flex:1;min-width:0">
         <div class="ci-mac">${mac}</div>
         <div class="ci-vendor">${info.vendor} · ${info.type}</div>
