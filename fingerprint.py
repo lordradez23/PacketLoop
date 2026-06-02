@@ -39,6 +39,7 @@ KNOWN_DEVICE_TYPES = {
     "00:50:e4": ("LG Electronics", "Smart TV/Appliances"),
     "00:11:0a": ("Hewlett-Packard", "Printer/Server"),
     "00:14:22": ("Dell Inc.", "Laptop/Desktop"),
+    "6c:23:b9": ("Sony Mobile", "Xperia Phone"),
 }
 
 class ClientFingerprint:
