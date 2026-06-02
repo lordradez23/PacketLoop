@@ -2,6 +2,7 @@ import subprocess
 import threading
 import time
 import os
+import random
 
 # Feature 4: Multi-Interface Support
 # Allows PacketLoop to orchestrate multiple wireless adapters simultaneously.
@@ -39,6 +40,17 @@ class SequentialHopper:
         ch = self.channels[self.current_index]
         self.current_index = (self.current_index + 1) % len(self.channels)
         return ch
+
+class RandomHopper:
+    """
+    Randomized channel hopping.
+    """
+    def __init__(self, interface, channels=None):
+        self.interface = interface
+        self.channels = channels or list(range(1, 14))
+    
+    def get_next_channel(self):
+        return random.choice(self.channels)
 
 class InterfaceWorker(threading.Thread):
     """A worker thread that manages packet injection on a single wireless interface."""
