@@ -12,11 +12,12 @@ import os
 # Requires no third-party libraries - uses urllib only.
 
 class CloudAlerts:
-    def __init__(self, discord_webhook=None, telegram_token=None, telegram_chat_id=None):
+    def __init__(self, discord_webhook=None, telegram_token=None, telegram_chat_id=None, matrix_url=None):
         self.discord_webhook = discord_webhook or os.getenv("PACKETLOOP_DISCORD_WEBHOOK")
         self.telegram_token = telegram_token or os.getenv("PACKETLOOP_TELEGRAM_TOKEN")
         self.telegram_chat_id = telegram_chat_id or os.getenv("PACKETLOOP_TELEGRAM_CHAT_ID")
-        self._enabled = bool(self.discord_webhook or (self.telegram_token and self.telegram_chat_id))
+        self.matrix_url = matrix_url or os.getenv("PACKETLOOP_MATRIX_URL")
+        self._enabled = bool(self.discord_webhook or (self.telegram_token and self.telegram_chat_id) or self.matrix_url)
 
     def log(self, msg):
         print(f"[CloudAlerts] {msg}")
@@ -61,12 +62,33 @@ class CloudAlerts:
         except Exception as e:
             self.log(f"Telegram request failed: {e}")
 
+    def _send_matrix(self, message):
+        """Sends a message to a Matrix room via homeserver URL."""
+        if not self.matrix_url:
+            return
+        payload = json.dumps({
+            "msgtype": "m.text",
+            "body": message.replace("**", "").replace("`", "")
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            self.matrix_url, data=payload,
+            headers={"Content-Type": "application/json"},
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                if resp.status != 200:
+                    self.log(f"Matrix alert failed with status: {resp.status}")
+        except Exception as e:
+            self.log(f"Matrix request failed: {e}")
+
     def alert(self, message):
         """Broadcasts an alert to all configured services."""
         if not self._enabled:
             return
         self._send_discord(message)
         self._send_telegram(message)
+        self._send_matrix(message)
 
     def new_client_detected(self, mac, bssid):
         msg = (
