@@ -2,6 +2,7 @@ import subprocess
 import os
 import struct
 import time
+import json
 from collections import defaultdict
 
 # Feature 10: PCAP Analysis Engine
@@ -134,3 +135,16 @@ class PcapAnalyzer:
         print()
 
         return report
+
+    def export_json(self, report, output_path=None):
+        """Exports the report dictionary as a JSON file."""
+        if not output_path:
+            output_path = self.pcap_path + ".report.json"
+        try:
+            with open(output_path, "w") as f:
+                json.dump(report, f, indent=4)
+            self.log(f"JSON report exported to: {output_path}")
+            return output_path
+        except Exception as e:
+            self.log(f"Failed to export JSON: {e}")
+            return None
