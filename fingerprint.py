@@ -50,6 +50,7 @@ KNOWN_DEVICE_TYPES = {
     "00:0c:8a": ("Bose Corporation", "Speaker"),
     "00:0e:58": ("Sonos, Inc.", "Speaker/Amp"),
     "00:bb:3a": ("Amazon Technologies Inc.", "Echo/FireTV"),
+    "00:1a:11": ("Google LLC", "Chromecast/Nest"),
 }
 
 class ClientFingerprint:
