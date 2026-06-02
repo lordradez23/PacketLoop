@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import argparse
+import json
 
 # PacketLoop: Advanced WiFi Packet Injection & Looping Tool
 # Orchestration engine that ties together all modules.
@@ -189,21 +190,31 @@ if __name__ == "__main__":
     parser.add_argument("--telegram-chat", help="Telegram Chat ID for alerts")
     parser.add_argument("--analyze", action="store_true", help="Run PCAP analysis report after session")
     parser.add_argument("--quiet", action="store_true", help="Minimal output mode")
+    parser.add_argument("--config", help="Path to JSON configuration file")
 
     args = parser.parse_args()
 
+    # Feature 16: Load from config file if provided
+    config_params = {}
+    if args.config and os.path.exists(args.config):
+        try:
+            with open(args.config, "r") as f:
+                config_params = json.load(f)
+        except Exception as e:
+            print(f"Error loading config file: {e}")
+
     loop = PacketLoop(
-        interface=args.interface,
-        bssid=args.bssid,
-        whitelist=args.whitelist,
-        timeframe=args.time,
-        pcap=args.pcap,
-        discord_webhook=args.discord,
-        telegram_token=args.telegram_token,
-        telegram_chat_id=args.telegram_chat,
-        ghost=args.ghost,
-        protect_mac=args.protect,
-        analyze_after=args.analyze,
-        quiet=args.quiet
+        interface=config_params.get("interface", args.interface),
+        bssid=config_params.get("bssid", args.bssid),
+        whitelist=config_params.get("whitelist", args.whitelist),
+        timeframe=config_params.get("time", args.time),
+        pcap=config_params.get("pcap", args.pcap),
+        discord_webhook=config_params.get("discord", args.discord),
+        telegram_token=config_params.get("telegram_token", args.telegram_token),
+        telegram_chat_id=config_params.get("telegram_chat", args.telegram_chat),
+        ghost=config_params.get("ghost", args.ghost),
+        protect_mac=config_params.get("protect", args.protect),
+        analyze_after=config_params.get("analyze", args.analyze),
+        quiet=config_params.get("quiet", args.quiet)
     )
     loop.run()
