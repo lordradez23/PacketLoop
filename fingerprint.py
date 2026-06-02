@@ -35,6 +35,7 @@ KNOWN_DEVICE_TYPES = {
     "00:1c:2b": ("Microsoft", "Surface/Xbox"),
     "28:cf:e9": ("Apple", "Mac Pro"),
     "d0:03:4b": ("Apple", "iPhone 15+"),
+    "00:13:a9": ("Sony", "PlayStation/Bravia"),
 }
 
 class ClientFingerprint:
