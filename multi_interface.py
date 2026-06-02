@@ -8,6 +8,24 @@ import os
 # Each interface operates independently, targeting a separate BSSID or channel.
 # This enables parallel channel operations for large-scale environments.
 
+class WeightedHopper:
+    """
+    Experimental Weighted Channel Hopping logic.
+    Prioritizes channels with higher traffic volume.
+    """
+    def __init__(self, interface, weights=None):
+        self.interface = interface
+        self.weights = weights or {} # {channel: weight}
+    
+    def get_next_channel(self):
+        # In a real implementation, this would use random.choices() based on weights.
+        # For now, it returns the top-weighted channel.
+        if not self.weights: return 1
+        return max(self.weights, key=self.weights.get)
+
+    def update_weight(self, channel, packet_count):
+        self.weights[channel] = packet_count
+
 class InterfaceWorker(threading.Thread):
     """A worker thread that manages packet injection on a single wireless interface."""
 
