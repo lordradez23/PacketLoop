@@ -49,6 +49,7 @@ KNOWN_DEVICE_TYPES = {
     "00:00:6c": ("Motorola Mobility LLC", "Phone"),
     "00:0c:8a": ("Bose Corporation", "Speaker"),
     "00:0e:58": ("Sonos, Inc.", "Speaker/Amp"),
+    "00:bb:3a": ("Amazon Technologies Inc.", "Echo/FireTV"),
 }
 
 class ClientFingerprint:
