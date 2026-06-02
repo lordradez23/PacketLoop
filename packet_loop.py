@@ -18,6 +18,14 @@ from scheduler import Scheduler
 from pcap_analyzer import PcapAnalyzer
 
 
+# ANSI Color Escape Codes
+CLR_G = "\033[92m" # Green
+CLR_Y = "\033[93m" # Yellow
+CLR_B = "\033[94m" # Blue
+CLR_R = "\033[91m" # Red
+CLR_C = "\033[96m" # Cyan
+CLR_E = "\033[0m"  # End
+
 class PacketLoop:
     def __init__(self, interface, bssid, whitelist, timeframe, pcap=None,
                  discord_webhook=None, telegram_token=None, telegram_chat_id=None,
@@ -43,10 +51,10 @@ class PacketLoop:
         self.protection = BeaconProtection(interface, protect_mac, bssid) if protect_mac else None
 
     def log(self, message):
-        print(f"[*] {message}")
+        print(f"{CLR_B}[*]{CLR_E} {message}")
 
     def error(self, message):
-        print(f"[!] ERROR: {message}")
+        print(f"{CLR_R}[!] ERROR:{CLR_E} {message}")
 
     def check_root(self):
         if os.name == 'posix':
