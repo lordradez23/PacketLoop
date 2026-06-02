@@ -41,6 +41,7 @@ KNOWN_DEVICE_TYPES = {
     "00:14:22": ("Dell Inc.", "Laptop/Desktop"),
     "6c:23:b9": ("Sony Mobile", "Xperia Phone"),
     "00:1d:be": ("Nintendo Co., Ltd.", "Console/Handheld"),
+    "00:15:af": ("ASUSTek Computer Inc.", "Laptop/Router"),
 }
 
 class ClientFingerprint:
