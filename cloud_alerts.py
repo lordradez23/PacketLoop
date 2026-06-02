@@ -12,17 +12,20 @@ import os
 # Requires no third-party libraries - uses urllib only.
 
 class CloudAlerts:
-    def __init__(self, discord_webhook=None, telegram_token=None, telegram_chat_id=None, matrix_url=None, slack_webhook=None):
+    def __init__(self, discord_webhook=None, telegram_token=None, telegram_chat_id=None, 
+                 matrix_url=None, slack_webhook=None, pushbullet_token=None):
         self.discord_webhook = discord_webhook or os.getenv("PACKETLOOP_DISCORD_WEBHOOK")
         self.telegram_token = telegram_token or os.getenv("PACKETLOOP_TELEGRAM_TOKEN")
         self.telegram_chat_id = telegram_chat_id or os.getenv("PACKETLOOP_TELEGRAM_CHAT_ID")
         self.matrix_url = matrix_url or os.getenv("PACKETLOOP_MATRIX_URL")
         self.slack_webhook = slack_webhook or os.getenv("PACKETLOOP_SLACK_WEBHOOK")
+        self.pushbullet_token = pushbullet_token or os.getenv("PACKETLOOP_PUSHBULLET_TOKEN")
         self._enabled = bool(
             self.discord_webhook or 
             (self.telegram_token and self.telegram_chat_id) or 
             self.matrix_url or
-            self.slack_webhook
+            self.slack_webhook or
+            self.pushbullet_token
         )
 
     def log(self, msg):
@@ -105,6 +108,30 @@ class CloudAlerts:
         except Exception as e:
             self.log(f"Slack request failed: {e}")
 
+    def _send_pushbullet(self, message):
+        """Sends a push notification via Pushbullet API."""
+        if not self.pushbullet_token:
+            return
+        payload = json.dumps({
+            "type": "note",
+            "title": "PacketLoop Alert",
+            "body": message.replace("**", "").replace("`", "")
+        }).encode("utf-8")
+        req = urllib.request.Request(
+            "https://api.pushbullet.com/v2/pushes", data=payload,
+            headers={
+                "Content-Type": "application/json",
+                "Access-Token": self.pushbullet_token
+            },
+            method="POST"
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=5) as resp:
+                if resp.status != 200:
+                    self.log(f"Pushbullet alert failed with status: {resp.status}")
+        except Exception as e:
+            self.log(f"Pushbullet request failed: {e}")
+
     def alert(self, message):
         """Broadcasts an alert to all configured services."""
         if not self._enabled:
@@ -113,6 +140,7 @@ class CloudAlerts:
         self._send_telegram(message)
         self._send_matrix(message)
         self._send_slack(message)
+        self._send_pushbullet(message)
 
     def new_client_detected(self, mac, bssid):
         msg = (
