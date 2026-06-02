@@ -44,6 +44,7 @@ KNOWN_DEVICE_TYPES = {
     "00:15:af": ("ASUSTek Computer Inc.", "Laptop/Router"),
     "00:14:6c": ("NETGEAR", "Router/AP"),
     "00:1f:3f": ("TP-Link", "Router/Cam"),
+    "00:13:46": ("D-Link Systems", "Access Point"),
 }
 
 class ClientFingerprint:
