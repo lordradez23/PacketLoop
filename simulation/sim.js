@@ -115,6 +115,16 @@ function exportSessionLog() {
   URL.revokeObjectURL(url);
 }
 
+function copyToClipboard(text) {
+  const el = document.createElement('textarea');
+  el.value = text;
+  document.body.appendChild(el);
+  el.select();
+  document.execCommand('copy');
+  document.body.removeChild(el);
+  termLine(`📋 Copied to clipboard: ${text}`, "term-success");
+}
+
 function pulse(id) {
   const el = $(id);
   if (!el) return;
@@ -536,6 +546,7 @@ function updateClientUI() {
         ${info.status === "whitelisted" ? "SAFE" : "KICKED"}
       </span>
     `;
+    item.onclick = () => copyToClipboard(mac);
     list.appendChild(item);
   });
 }
