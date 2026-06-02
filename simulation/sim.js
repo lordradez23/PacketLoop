@@ -44,6 +44,9 @@ const state = {
   pcapFrames: 0,
   pcapBytes: 0,
 
+  // Logs
+  logs: [],
+
   // Topology
   topoNodes: [], // { x, y, mac, type, active, flare: 0 }
 };
@@ -78,9 +81,11 @@ function termLine(text, cls = "") {
   const d = document.createElement("div");
   d.className = "term-line" + (cls ? " " + cls : "");
   const ts = new Date().toLocaleTimeString("en-GB", { hour12: false });
-  d.innerHTML = `<span class="term-dim">[${ts}]</span> ${text}`;
+  const html = `<span class="term-dim">[${ts}]</span> ${text}`;
+  d.innerHTML = html;
   term.appendChild(d);
   term.scrollTop = term.scrollHeight;
+  state.logs.push(`[${ts}] ${text.replace(/<[^>]*>?/gm, '')}`);
 }
 
 function termRaw(text, cls = "") {
@@ -89,10 +94,25 @@ function termRaw(text, cls = "") {
   d.innerHTML = text;
   term.appendChild(d);
   term.scrollTop = term.scrollHeight;
+  state.logs.push(text.replace(/<[^>]*>?/gm, ''));
 }
 
 function clearTerminal() {
   term.innerHTML = "";
+  state.logs = [];
+}
+
+function exportSessionLog() {
+  const content = state.logs.join("\n");
+  const blob = new Blob([content], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `packetloop_session_${state.bssid.replace(/:/g,"")}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 function pulse(id) {
