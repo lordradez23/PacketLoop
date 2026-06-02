@@ -48,6 +48,7 @@ KNOWN_DEVICE_TYPES = {
     "d0:57:7b": ("Lenovo", "Laptop/Tablet"),
     "00:00:6c": ("Motorola Mobility LLC", "Phone"),
     "00:0c:8a": ("Bose Corporation", "Speaker"),
+    "00:0e:58": ("Sonos, Inc.", "Speaker/Amp"),
 }
 
 class ClientFingerprint:
