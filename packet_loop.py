@@ -28,18 +28,20 @@ CLR_C = "\033[96m" # Cyan
 CLR_E = "\033[0m"  # End
 
 class PacketLoop:
-    def __init__(self, interface, bssid, whitelist, timeframe, pcap=None,
+    def __init__(self, interface, bssid, timeframe=120, whitelist=None, pcap=None, 
                  discord_webhook=None, telegram_token=None, telegram_chat_id=None,
-                 ghost=False, protect_mac=None, analyze_after=False, quiet=False):
+                 ghost=True, protect_mac=None, analyze_after=False, quiet=False,
+                 vendor_filter=None):
         self.interface = interface
         self.bssid = bssid
-        self.whitelist = [mac.lower() for mac in whitelist]
-        self.timeframe = timeframe
+        self.timeframe = int(timeframe)
+        self.whitelist = whitelist or []
         self.pcap = pcap
         self.ghost = ghost
         self.protect_mac = protect_mac
         self.analyze_after = analyze_after
         self.quiet = quiet
+        self.vendor_filter = vendor_filter
         self.processes = []
         self.running = True
         self._deauth_count = 0
@@ -191,6 +193,7 @@ if __name__ == "__main__":
     parser.add_argument("--analyze", action="store_true", help="Run PCAP analysis report after session")
     parser.add_argument("--quiet", action="store_true", help="Minimal output mode")
     parser.add_argument("--config", help="Path to JSON configuration file")
+    parser.add_argument("--vendor-filter", help="Only target clients from this vendor")
 
     args = parser.parse_args()
 
@@ -215,6 +218,7 @@ if __name__ == "__main__":
         ghost=config_params.get("ghost", args.ghost),
         protect_mac=config_params.get("protect", args.protect),
         analyze_after=config_params.get("analyze", args.analyze),
-        quiet=config_params.get("quiet", args.quiet)
+        quiet=config_params.get("quiet", args.quiet),
+        vendor_filter=config_params.get("vendor_filter", args.vendor_filter)
     )
     loop.run()
