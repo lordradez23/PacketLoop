@@ -47,6 +47,7 @@ KNOWN_DEVICE_TYPES = {
     "00:13:46": ("D-Link Systems", "Access Point"),
     "d0:57:7b": ("Lenovo", "Laptop/Tablet"),
     "00:00:6c": ("Motorola Mobility LLC", "Phone"),
+    "00:0c:8a": ("Bose Corporation", "Speaker"),
 }
 
 class ClientFingerprint:
