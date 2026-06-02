@@ -347,6 +347,20 @@ html, body {
 .alert-msg { color: var(--text-mid); flex: 1; }
 .alert-time { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); flex-shrink: 0; }
 
+.gauge-container {
+  width: 40px; height: 40px; position: relative;
+  border-radius: 50%; background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+}
+.gauge-fill {
+  width: 100%; height: 100%; position: absolute;
+  border-radius: 50%;
+  background: conic-gradient(var(--accent) var(--p), transparent 0);
+  mask: radial-gradient(transparent 60%, black 61%);
+  transition: --p .3s ease;
+}
+@property --p { syntax: '<percentage>'; inherits: false; initial-value: 0%; }
+
 /* ---- Modal ---- */
 .modal-backdrop {
   position: fixed; inset: 0;

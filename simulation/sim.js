@@ -305,8 +305,12 @@ function tickPps() {
   }
 
   state.ppsHistory.push(state.pps);
-  $("sPps").textContent  = state.pps;
   $("hdrPps").textContent = state.pps;
+  $("sPps").textContent = state.pps;
+  
+  // Feature 39: Update gauge
+  const ppsLoad = Math.min(100, Math.round((state.pps / 1000) * 100));
+  $("ppsGauge").style.setProperty("--p", ppsLoad + "%");
   $("ppsChip").textContent = `${state.pps} PPS`;
   $("ppsChip").className = "chip " + (state.pps > 2000 ? "danger" : state.pps > 1000 ? "warning" : "running");
   drawPpsChart();
